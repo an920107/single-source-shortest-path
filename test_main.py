@@ -3,37 +3,6 @@ import unittest
 
 from main import Graph, GraphType
 
-TESTCASES = [
-    [
-        (0, 1, 1),
-        (1, 2, 1),
-        (2, 3, 1),
-        (3, 1, -4),
-        (0, 3, 10),
-    ],
-    [
-        (0, 1, 2),
-        (0, 2, 4),
-        (1, 2, -3),
-        (1, 3, 2),
-        (2, 3, 3),
-    ],
-    [
-        (0, 1, 5),
-        (0, 2, 2),
-        (0, 3, 7),
-        (1, 2, 1),
-        (1, 3, 3),
-        (2, 0, 6),
-    ],
-    [
-        (0, 1, 1),
-        (0, 2, 2),
-        (1, 3, 4),
-        (2, 3, 3),
-    ],
-]
-
 
 class TestGraph(unittest.TestCase):
     def test_init(self):
@@ -58,54 +27,88 @@ class TestGraph(unittest.TestCase):
         self.assertRaises(ValueError, lambda: cut.add_edge(0, 1, 1))
 
     def test_evaluate_type(self):
-        cut = Graph(5)
-        vals = TESTCASES[0]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertEqual(cut.evaluate_type(), GraphType.NEG_CYCLE)
-
-        cut = Graph(4)
-        vals = TESTCASES[1]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertEqual(cut.evaluate_type(), GraphType.NEG_EDGE)
-
-        cut = Graph(4)
-        vals = TESTCASES[2]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertEqual(cut.evaluate_type(), GraphType.ALL_POS)
-
-        cut = Graph(4)
-        vals = TESTCASES[3]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertEqual(cut.evaluate_type(), GraphType.DAG)
+        for testcase in TESTCASES:
+            cut = Graph(testcase.vertex_count)
+            for from_vertex, to_vertex, weight in testcase.edges:
+                cut.add_edge(from_vertex, to_vertex, weight)
+            self.assertEqual(cut.evaluate_type(), testcase.ans_type)
 
     def test_evaluate_distances(self):
-        cut = Graph(5)
-        vals = TESTCASES[0]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertIsNone(cut.evaluate_distances())
+        for testcase in TESTCASES:
+            cut = Graph(testcase.vertex_count)
+            for from_vertex, to_vertex, weight in testcase.edges:
+                cut.add_edge(from_vertex, to_vertex, weight)
+            distances = cut.evaluate_distances()
+            if testcase.ans_distances is None:
+                self.assertIsNone(distances)
+            else:
+                self.assertListEqual(distances, testcase.ans_distances)
 
-        cut = Graph(4)
-        vals = TESTCASES[1]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertListEqual(cut.evaluate_distances(), [0, 2, -1, 2])
 
-        cut = Graph(4)
-        vals = TESTCASES[2]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertListEqual(cut.evaluate_distances(), [0, 5, 2, 7])
+class Testcase:
+    def __init__(
+        self,
+        vertex_count: int,
+        edges: list[tuple[int]],
+        ans_type: GraphType,
+        ans_distances: list[int],
+    ) -> None:
+        self.vertex_count = vertex_count
+        self.edges = edges
+        self.ans_type = ans_type
+        self.ans_distances = ans_distances
 
-        cut = Graph(4)
-        vals = TESTCASES[3]
-        for from_vertex, to_vertex, weight in vals:
-            cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertListEqual(cut.evaluate_distances(), [0, 1, 2, 5])
+
+TESTCASES = [
+    Testcase(
+        5,
+        [
+            (0, 1, 1),
+            (1, 2, 1),
+            (2, 3, 1),
+            (3, 1, -4),
+            (0, 3, 10),
+        ],
+        GraphType.NEG_CYCLE,
+        None,
+    ),
+    Testcase(
+        4,
+        [
+            (0, 1, 2),
+            (0, 2, 4),
+            (1, 2, -3),
+            (1, 3, 2),
+            (2, 3, 3),
+        ],
+        GraphType.NEG_EDGE,
+        [0, 2, -1, 2],
+    ),
+    Testcase(
+        4,
+        [
+            (0, 1, 5),
+            (0, 2, 2),
+            (0, 3, 7),
+            (1, 2, 1),
+            (1, 3, 3),
+            (2, 0, 6),
+        ],
+        GraphType.ALL_POS,
+        [0, 5, 2, 7],
+    ),
+    Testcase(
+        4,
+        [
+            (0, 1, 1),
+            (0, 2, 2),
+            (1, 3, 4),
+            (2, 3, 3),
+        ],
+        GraphType.DAG,
+        [0, 1, 2, 5],
+    ),
+]
 
 if __name__ == "__main__":
     unittest.main()
