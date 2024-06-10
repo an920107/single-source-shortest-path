@@ -82,6 +82,30 @@ class TestGraph(unittest.TestCase):
             cut.add_edge(from_vertex, to_vertex, weight)
         self.assertEqual(cut.evaluate_type(), GraphType.DAG)
 
+    def test_evaluate_distances(self):
+        cut = Graph(5)
+        vals = TESTCASES[0]
+        for from_vertex, to_vertex, weight in vals:
+            cut.add_edge(from_vertex, to_vertex, weight)
+        self.assertIsNone(cut.evaluate_distances())
+
+        cut = Graph(4)
+        vals = TESTCASES[1]
+        for from_vertex, to_vertex, weight in vals:
+            cut.add_edge(from_vertex, to_vertex, weight)
+        self.assertListEqual(cut.evaluate_distances(), [0, 2, -1, 2])
+
+        cut = Graph(4)
+        vals = TESTCASES[2]
+        for from_vertex, to_vertex, weight in vals:
+            cut.add_edge(from_vertex, to_vertex, weight)
+        self.assertListEqual(cut.evaluate_distances(), [0, 5, 2, 7])
+
+        cut = Graph(4)
+        vals = TESTCASES[3]
+        for from_vertex, to_vertex, weight in vals:
+            cut.add_edge(from_vertex, to_vertex, weight)
+        self.assertListEqual(cut.evaluate_distances(), [0, 1, 2, 5])
 
 if __name__ == "__main__":
     unittest.main()
