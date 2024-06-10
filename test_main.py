@@ -62,7 +62,7 @@ class TestGraph(unittest.TestCase):
         ]
         for from_vertex, to_vertex, weight in vals:
             cut.add_edge(from_vertex, to_vertex, weight)
-        self.assertEqual(cut.evaluate_type(), GraphType.WITHOUT_NEG)
+        self.assertEqual(cut.evaluate_type(), GraphType.ALL_POS)
 
         cut = Graph(4)
         vals = [

@@ -6,7 +6,7 @@ from enum import Enum
 class GraphType(int, Enum):
     NEG_CYCLE = 0
     NEG_EDGE = 1
-    WITHOUT_NEG = 2
+    ALL_POS = 2
     DAG = 3
 
 
@@ -47,16 +47,18 @@ class Graph(list[list[int]]):
                             distances[from_vertex] + self[from_vertex][to_vertex]
                         )
         return distances
-
-    def _is_with_neg_cycle(self) -> bool:
-        distances = self._bellman_ford_init()
-        distances = self._bellman_ford_relax(distances)
-
+    
+    def _bellman_ford_check(self, distances: list[float]) -> bool:
         for from_vertex in range(len(self)):
             for to_vertex in range(len(self)):
                 if self._ballman_ford_determine(distances, from_vertex, to_vertex):
                     return True
         return False
+
+    def _is_with_neg_cycle(self) -> bool:
+        distances = self._bellman_ford_init()
+        distances = self._bellman_ford_relax(distances)
+        return self._bellman_ford_check(distances)
 
     def _is_dag(self) -> bool:
         visited = [False] * len(self)
@@ -101,7 +103,19 @@ class Graph(list[list[int]]):
             return GraphType.DAG
 
         # Other scenario
-        return GraphType.WITHOUT_NEG
+        return GraphType.ALL_POS
+    
+    def evaluate_distances(self) -> list[int] | None:
+        """
+        Returns a list of distances from vertex 0 to another vertex,
+        which also contains vertex 0. If the shortest path cannot be
+        evaluated, returns `None`.
+        """
+        distances = self._bellman_ford_init()
+        distances = self._bellman_ford_relax(distances)
+        if self._bellman_ford_check(distances):
+            return None
+        return distances
 
 
 def main():
@@ -110,17 +124,19 @@ def main():
         graph = Graph(vertex_count)
         for _ in range(edge_count):
             graph.add_edge(*map(int, f.readline().split()))
-        match graph.evaluate_type():
-            case GraphType.NEG_CYCLE:
-                print("A graph with negative weight cycles")
-            case GraphType.NEG_EDGE:
-                print(
-                    "A graph with negative weight edges but no negative weight cycles"
-                )
-            case GraphType.WITHOUT_NEG:
-                print("A graph with no negative weight edges")
-            case GraphType.DAG:
-                print("A directed acyclic graph")
+        graph_type_description = {
+            GraphType.NEG_CYCLE: "A graph with negative weight cycles.",
+            GraphType.NEG_EDGE: "A graph with negative weight edges but no negative weight cycles.",
+            GraphType.ALL_POS: "A graph with no negative weight edges.",
+            GraphType.DAG: "A directed acyclic graph.",
+        }
+        print(graph_type_description[graph.evaluate_type()])
+        distances = graph.evaluate_distances()
+        if distances is None:
+            print("No shortest paths can be found.")
+        else:
+            for i in range(1, vertex_count):
+                print(0, i, distances[i])
 
 
 if __name__ == "__main__":
